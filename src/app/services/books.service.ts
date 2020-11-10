@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { Subject } from 'rxjs';
 import { Book } from '../models/Book.model';
 import * as firebase from 'firebase';
+import { error } from 'protractor';
 
 @Injectable({
   providedIn: 'root'
@@ -40,6 +41,7 @@ export class BooksService {
                   (data) => {
                     resolve(data.val());
                   },
+                  // tslint:disable-next-line: no-shadowed-variable
                   (error) => {
                     reject(error);
                   }
@@ -57,9 +59,22 @@ export class BooksService {
 
   // tslint:disable-next-line: typedef
   removeBook(book: Book){
+    if (book.photo){
+      const storageRef = firebase.storage().refFromURL(book.photo);
+      storageRef.delete().then(
+        () => {
+          console.log('Photo supprimée !');
+        }
+      ).catch(
+        // tslint:disable-next-line: no-shadowed-variable
+        (error) => {
+          console.log('Fichier non trouvé : ' + error);
+        }
+      );
+    }
     const bookIndexToRemove = this.books.findIndex(
       (bookEl) => {
-        if(bookEl === book) {
+        if (bookEl === book) {
           return true;
         }
       }
@@ -70,6 +85,7 @@ export class BooksService {
   }
 
 
+  // tslint:disable-next-line: typedef
   uploadFile(file: File){
     return new Promise(
       (resolve, reject) => {
@@ -82,6 +98,7 @@ export class BooksService {
           () => {
             console.log('Chargement en Cours...');
           },
+          // tslint:disable-next-line: no-shadowed-variable
           (error) => {
             console.log('Erreur de chargement : ' + error);
             reject();
